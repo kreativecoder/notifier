@@ -16,9 +16,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Subscription create(String topic, SubscriptionRequest request) {
+        var optSubscription = repository.findByTopic(topic);
         var subscription = new Subscription();
-        subscription.setTopic(topic);
-        subscription.setSubscribers(Set.of(request.getUrl()));
+        if (optSubscription.isPresent()) {
+            subscription = optSubscription.get();
+            var subscribers = subscription.getSubscribers();
+            subscribers.add(request.getUrl());
+            subscription.setSubscribers(subscribers);
+        } else {
+            subscription.setTopic(topic);
+            subscription.setSubscribers(Set.of(request.getUrl()));
+        }
 
         return repository.save(subscription);
     }
