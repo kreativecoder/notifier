@@ -30,4 +30,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         return repository.save(subscription);
     }
+
+    @Override
+    public Set<String> retrieveSubscribersByTopic(String topic) {
+        return repository.findByTopic(topic)
+                .map(Subscription::getSubscribers)
+                .orElse(Set.of());
+    }
 }
