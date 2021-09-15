@@ -5,6 +5,9 @@ import com.pangaea.notifier.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 @RequiredArgsConstructor
 @Service
 public class PublicationServiceImpl implements PublicationService {
@@ -14,6 +17,9 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     public void create(String topic, String request) {
         var subscribers = subscriptionService.retrieveSubscribersByTopic(topic);
-        subscribers.forEach(subscriber -> httpSender.send(subscriber, request));
+        subscribers.stream()
+                .map(s -> httpSender.send(s, request))
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 }
